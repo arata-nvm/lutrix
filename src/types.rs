@@ -26,7 +26,13 @@ impl Cnf {
         Self {
             num_of_variables,
             clauses: Vec::new(),
-            determined: HashMap::new(),
+            determined: {
+                let mut determined = Solution::new();
+                for i in 1..=num_of_variables {
+                    determined.insert(i, false);
+                }
+                determined
+            },
         }
     }
 
