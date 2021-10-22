@@ -66,52 +66,57 @@ fn apply_splitting_rule(cnf: &mut Cnf) -> SatResult {
 
 #[cfg(test)]
 mod tests {
-    use crate::types::*;
+    use crate::dimacs;
 
     #[test]
     fn dpll_1() {
-        let cnf = Cnf::new(vec![]);
+        let input = "p cnf 0 0";
+        let cnf = dimacs::parse(input);
         assert!(super::solve(cnf).is_sat());
     }
 
     #[test]
     fn dpll_2() {
-        let cnf = Cnf::new(vec![Clause::new(vec![Literal::new(1)])]);
+        let input = "p cnf 1 1
+                        1 0";
+        let cnf = dimacs::parse(input);
         assert!(super::solve(cnf).is_sat());
     }
 
     #[test]
     fn dpll_3() {
-        let cnf = Cnf::new(vec![
-            Clause::new(vec![Literal::new(1)]),
-            Clause::new(vec![Literal::new(-1)]),
-        ]);
+        let input = "p cnf 1 2
+                        1 0
+                        -1 0";
+        let cnf = dimacs::parse(input);
         assert!(super::solve(cnf).is_unsat());
     }
 
     #[test]
     fn dpll_4() {
-        let cnf = Cnf::new(vec![Clause::new(vec![Literal::new(1), Literal::new(2)])]);
+        let input = "p cnf 2 1
+                        1 2 0";
+        let cnf = dimacs::parse(input);
         assert!(super::solve(cnf).is_sat());
     }
 
     #[test]
     fn dpll_5() {
-        let cnf = Cnf::new(vec![
-            Clause::new(vec![Literal::new(1), Literal::new(-2)]),
-            Clause::new(vec![Literal::new(-1), Literal::new(2)]),
-        ]);
+        let input = "p cnf 2 2
+                        1 -2 0
+                        -1 2 0";
+        let cnf = dimacs::parse(input);
         assert!(super::solve(cnf).is_sat());
     }
 
     #[test]
     fn dpll_6() {
-        let cnf = Cnf::new(vec![
-            Clause::new(vec![Literal::new(1), Literal::new(2)]),
-            Clause::new(vec![Literal::new(-1), Literal::new(3)]),
-            Clause::new(vec![Literal::new(-1), Literal::new(-3)]),
-            Clause::new(vec![Literal::new(-2), Literal::new(-3)]),
-        ]);
+        let input = "p cnf 3 4
+                        1 2 0
+                        -1 3 0
+                        -1 -3 0
+                        -2 -3 0";
+        let cnf = dimacs::parse(input);
         assert!(super::solve(cnf).is_sat());
     }
 }

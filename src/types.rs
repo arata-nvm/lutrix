@@ -1,10 +1,11 @@
 use std::{collections::HashMap, fmt};
 
-pub type Variable = isize;
+pub type Variable = usize;
 pub type Solution = HashMap<Variable, bool>;
 
 #[derive(Debug, Clone)]
 pub struct Cnf {
+    pub num_of_variables: usize,
     pub clauses: Vec<Clause>,
     pub determined: Solution,
 }
@@ -21,9 +22,10 @@ pub struct Literal {
 }
 
 impl Cnf {
-    pub fn new(clauses: Vec<Clause>) -> Self {
+    pub fn new(num_of_variables: usize) -> Self {
         Self {
-            clauses,
+            num_of_variables,
+            clauses: Vec::new(),
             determined: HashMap::new(),
         }
     }
@@ -86,20 +88,9 @@ impl Clause {
 }
 
 impl Literal {
-    pub fn new(var: Variable) -> Self {
+    pub fn new(var: Variable, inverted: bool) -> Self {
         assert!(var != 0);
-
-        if var > 0 {
-            Self {
-                var,
-                inverted: false,
-            }
-        } else {
-            Self {
-                var: -var,
-                inverted: true,
-            }
-        }
+        Self { var, inverted }
     }
 
     pub fn inverted(&self) -> Self {
