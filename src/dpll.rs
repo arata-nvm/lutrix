@@ -39,7 +39,7 @@ fn apply_unit_rule(cnf: &mut Cnf) {
     for literal in cnf.find_unit_clauses() {
         cnf.remove_clauses_which_has(&literal);
         cnf.remove_from_all(&literal.inverted());
-        cnf.determine(literal.name, !literal.inverted);
+        cnf.determine(literal.var, !literal.inverted);
     }
 }
 
@@ -76,33 +76,30 @@ mod tests {
 
     #[test]
     fn dpll_2() {
-        let cnf = Cnf::new(vec![Clause::new(vec![Literal::new("a")])]);
+        let cnf = Cnf::new(vec![Clause::new(vec![Literal::new(1)])]);
         assert!(super::solve(cnf).is_sat());
     }
 
     #[test]
     fn dpll_3() {
         let cnf = Cnf::new(vec![
-            Clause::new(vec![Literal::new("a")]),
-            Clause::new(vec![Literal::new("-a")]),
+            Clause::new(vec![Literal::new(1)]),
+            Clause::new(vec![Literal::new(-1)]),
         ]);
         assert!(super::solve(cnf).is_unsat());
     }
 
     #[test]
     fn dpll_4() {
-        let cnf = Cnf::new(vec![Clause::new(vec![
-            Literal::new("a"),
-            Literal::new("b"),
-        ])]);
+        let cnf = Cnf::new(vec![Clause::new(vec![Literal::new(1), Literal::new(2)])]);
         assert!(super::solve(cnf).is_sat());
     }
 
     #[test]
     fn dpll_5() {
         let cnf = Cnf::new(vec![
-            Clause::new(vec![Literal::new("a"), Literal::new("-b")]),
-            Clause::new(vec![Literal::new("-a"), Literal::new("b")]),
+            Clause::new(vec![Literal::new(1), Literal::new(-2)]),
+            Clause::new(vec![Literal::new(-1), Literal::new(2)]),
         ]);
         assert!(super::solve(cnf).is_sat());
     }
@@ -110,10 +107,10 @@ mod tests {
     #[test]
     fn dpll_6() {
         let cnf = Cnf::new(vec![
-            Clause::new(vec![Literal::new("x1"), Literal::new("x2")]),
-            Clause::new(vec![Literal::new("-x1"), Literal::new("x3")]),
-            Clause::new(vec![Literal::new("x1"), Literal::new("-x3")]),
-            Clause::new(vec![Literal::new("-x2"), Literal::new("-x3")]),
+            Clause::new(vec![Literal::new(1), Literal::new(2)]),
+            Clause::new(vec![Literal::new(-1), Literal::new(3)]),
+            Clause::new(vec![Literal::new(-1), Literal::new(-3)]),
+            Clause::new(vec![Literal::new(-2), Literal::new(-3)]),
         ]);
         assert!(super::solve(cnf).is_sat());
     }

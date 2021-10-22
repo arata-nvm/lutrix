@@ -1,6 +1,7 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, fmt};
 
-pub type Solution = HashMap<String, bool>;
+pub type Variable = isize;
+pub type Solution = HashMap<Variable, bool>;
 
 #[derive(Debug, Clone)]
 pub struct Cnf {
@@ -15,7 +16,7 @@ pub struct Clause {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Literal {
-    pub name: String,
+    pub var: Variable,
     pub inverted: bool,
 }
 
@@ -61,8 +62,8 @@ impl Cnf {
         self.clauses.push(Clause::new(vec![literal]));
     }
 
-    pub fn determine(&mut self, name: String, value: bool) {
-        self.determined.insert(name, value);
+    pub fn determine(&mut self, var: Variable, value: bool) {
+        self.determined.insert(var, value);
     }
 }
 
