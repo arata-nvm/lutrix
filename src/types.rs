@@ -28,6 +28,24 @@ impl Cnf {
         }
     }
 
+    pub fn add_clause(&mut self, literals: &[Literal]) {
+        self.clauses.push(Clause::new(literals.to_vec()));
+    }
+
+    pub fn remove_clauses_which_has(&mut self, literal: &Literal) {
+        self.clauses.retain(|c| !c.has_literal(literal));
+    }
+
+    pub fn remove_from_all(&mut self, literal: &Literal) {
+        for i in 0..self.clauses.len() {
+            self.clauses[i].remove(literal);
+        }
+    }
+
+    pub fn determine(&mut self, var: Variable, value: bool) {
+        self.determined.insert(var, value);
+    }
+
     pub fn is_consistent(&self) -> bool {
         self.clauses.is_empty()
     }
@@ -47,29 +65,15 @@ impl Cnf {
     pub fn head_literal(&self) -> Option<Literal> {
         self.clauses.get(0).and_then(|c| c.literals.get(0)).cloned()
     }
-
-    pub fn remove_clauses_which_has(&mut self, literal: &Literal) {
-        self.clauses.retain(|c| !c.has_literal(literal));
-    }
-
-    pub fn remove_from_all(&mut self, literal: &Literal) {
-        for i in 0..self.clauses.len() {
-            self.clauses[i].remove(literal);
-        }
-    }
-
-    pub fn assume(&mut self, literal: Literal) {
-        self.clauses.push(Clause::new(vec![literal]));
-    }
-
-    pub fn determine(&mut self, var: Variable, value: bool) {
-        self.determined.insert(var, value);
-    }
 }
 
 impl Clause {
     pub fn new(literals: Vec<Literal>) -> Self {
         Self { literals }
+    }
+
+    pub fn remove(&mut self, literal: &Literal) {
+        self.literals.retain(|l| l != literal);
     }
 
     pub fn is_empty(&self) -> bool {
@@ -78,10 +82,6 @@ impl Clause {
 
     pub fn has_literal(&self, literal: &Literal) -> bool {
         self.literals.iter().any(|l| l == literal)
-    }
-
-    pub fn remove(&mut self, literal: &Literal) {
-        self.literals.retain(|l| l != literal);
     }
 }
 

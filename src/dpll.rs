@@ -50,13 +50,13 @@ fn apply_splitting_rule(cnf: &mut Cnf) -> SatResult {
     };
 
     let mut cnf_true = cnf.clone();
-    cnf_true.assume(literal.clone());
+    cnf_true.add_clause(&[literal.clone()]);
     if let SatResult::Sat(solution) = solve(cnf_true) {
         return SatResult::Sat(solution);
     }
 
     let mut cnf_false = cnf.clone();
-    cnf_false.assume(literal.inverted());
+    cnf_false.add_clause(&[literal.inverted()]);
     if let SatResult::Sat(solution) = solve(cnf_false) {
         return SatResult::Sat(solution);
     }
