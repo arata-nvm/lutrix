@@ -1,6 +1,11 @@
+use std::collections::HashMap;
+
+pub type Solution = HashMap<String, bool>;
+
 #[derive(Debug, Clone)]
 pub struct Cnf {
     pub clauses: Vec<Clause>,
+    pub determined: Solution,
 }
 
 #[derive(Debug, Clone)]
@@ -16,7 +21,10 @@ pub struct Literal {
 
 impl Cnf {
     pub fn new(clauses: Vec<Clause>) -> Self {
-        Self { clauses }
+        Self {
+            clauses,
+            determined: HashMap::new(),
+        }
     }
 
     pub fn is_consistent(&self) -> bool {
@@ -51,6 +59,10 @@ impl Cnf {
 
     pub fn assume(&mut self, literal: Literal) {
         self.clauses.push(Clause::new(vec![literal]));
+    }
+
+    pub fn determine(&mut self, name: String, value: bool) {
+        self.determined.insert(name, value);
     }
 }
 
