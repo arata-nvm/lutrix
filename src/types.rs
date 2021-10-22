@@ -86,24 +86,63 @@ impl Clause {
 }
 
 impl Literal {
-    pub fn new<S: Into<String>>(name: S) -> Self {
-        let name = name.into();
-        match name.chars().nth(0).unwrap() {
-            '-' => Self {
-                name: name[1..].to_string(),
-                inverted: true,
-            },
-            _ => Self {
-                name,
+    pub fn new(var: Variable) -> Self {
+        assert!(var != 0);
+
+        if var > 0 {
+            Self {
+                var,
                 inverted: false,
-            },
+            }
+        } else {
+            Self {
+                var: -var,
+                inverted: true,
+            }
         }
     }
 
     pub fn inverted(&self) -> Self {
         Self {
-            name: self.name.clone(),
+            var: self.var,
             inverted: !self.inverted,
+        }
+    }
+}
+
+impl fmt::Display for Cnf {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{}",
+            self.clauses
+                .iter()
+                .map(|c| format!("{}", c))
+                .collect::<Vec<String>>()
+                .join(" && ")
+        )
+    }
+}
+
+impl fmt::Display for Clause {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "({})",
+            self.literals
+                .iter()
+                .map(|l| format!("{}", l))
+                .collect::<Vec<String>>()
+                .join(" || ")
+        )
+    }
+}
+
+impl fmt::Display for Literal {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self.inverted {
+            false => write!(f, "x{}", self.var),
+            true => write!(f, "!x{}", self.var),
         }
     }
 }
