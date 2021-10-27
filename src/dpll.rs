@@ -2,7 +2,7 @@ use crate::types::*;
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum SatResult {
-    Sat(Solution),
+    Sat(Model),
     Unsat,
 }
 

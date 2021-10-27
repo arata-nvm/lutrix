@@ -1,13 +1,13 @@
 use std::{collections::HashMap, fmt};
 
 pub type Variable = usize;
-pub type Solution = HashMap<Variable, bool>;
+pub type Model = HashMap<Variable, bool>;
 
 #[derive(Debug, Clone)]
 pub struct Cnf {
     pub num_of_variables: usize,
     pub clauses: Vec<Clause>,
-    pub determined: Solution,
+    pub determined: Model,
 }
 
 #[derive(Debug, Clone)]
@@ -27,7 +27,7 @@ impl Cnf {
             num_of_variables,
             clauses: Vec::new(),
             determined: {
-                let mut determined = Solution::new();
+                let mut determined = Model::new();
                 for i in 1..=num_of_variables {
                     determined.insert(i, false);
                 }
