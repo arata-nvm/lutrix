@@ -15,7 +15,7 @@ pub struct Clause {
     pub literals: Vec<Literal>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Literal {
     pub var: Variable,
     pub inverted: bool,
@@ -66,7 +66,7 @@ impl Cnf {
         self.clauses
             .iter()
             .filter(|c| c.literals.len() == 1)
-            .map(|c| c.literals[0].clone())
+            .map(|c| c.literals[0])
             .collect()
     }
 
