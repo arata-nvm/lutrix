@@ -6,4 +6,6 @@ pub mod dimacs;
 
 pub mod dpll;
 
+pub mod transformer;
+
 pub mod types;

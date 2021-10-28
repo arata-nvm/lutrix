@@ -1,10 +1,13 @@
 use std::collections::HashMap;
 
-use crate::{ast::*, types::*};
+use crate::{ast::*, transformer, types::*};
 
-pub fn transform(problem: Problem) -> Cnf {
-    let transformer = Transformer::new();
-    transformer.transform(problem)
+type TransformedProblem = (Cnf, HashMap<String, Value>);
+
+pub fn transform(problem: Problem) -> TransformedProblem {
+    let mut transformer = Transformer::new();
+    transformer.transform(problem);
+    (transformer.formula, transformer.variables)
 }
 
 struct Transformer {
@@ -14,7 +17,7 @@ struct Transformer {
 }
 
 #[derive(Debug, Clone)]
-enum Value {
+pub enum Value {
     Bool(Literal),
     BitVector(Vec<Literal>),
 }
@@ -44,12 +47,10 @@ impl Transformer {
         }
     }
 
-    fn transform(mut self, problem: Problem) -> Cnf {
+    fn transform(&mut self, problem: Problem) {
         for stmt in problem {
             self.transform_stmt(stmt);
         }
-
-        self.formula
     }
 
     fn transform_stmt(&mut self, stmt: Statement) {
@@ -71,10 +72,7 @@ impl Transformer {
     fn define(&mut self, name: String, typ: VariableType) {
         let val = match typ {
             VariableType::Bool => self.next_literal(),
-            VariableType::BitVector(length) => {
-                let bv = (1..length).map(|_| self.next_literal().as_bool()).collect();
-                Value::BitVector(bv)
-            }
+            VariableType::BitVector(length) => self.next_literals(length),
         };
         self.variables.insert(name, val);
     }
@@ -107,6 +105,26 @@ impl Transformer {
                 let val2 = self.transform_expr(*val2);
                 self.xor(val1, val2)
             }
+
+            Expression::BvNot(val1) => {
+                let val1 = self.transform_expr(*val1);
+                self.bvnot(val1)
+            }
+            Expression::BvAnd(val1, val2) => {
+                let val1 = self.transform_expr(*val1);
+                let val2 = self.transform_expr(*val2);
+                self.bvand(val1, val2)
+            }
+            Expression::BvOr(val1, val2) => {
+                let val1 = self.transform_expr(*val1);
+                let val2 = self.transform_expr(*val2);
+                self.bvor(val1, val2)
+            }
+            Expression::BvXor(val1, val2) => {
+                let val1 = self.transform_expr(*val1);
+                let val2 = self.transform_expr(*val2);
+                self.bvxor(val1, val2)
+            }
         }
     }
 
@@ -119,57 +137,108 @@ impl Transformer {
 
     fn not(&mut self, val: Value) -> Value {
         let dst = self.next_literal();
-        {
-            let dst = dst.as_bool();
-            let val = val.as_bool();
-            self.add_clause(&[dst.inverted(), val.inverted()]);
-            self.add_clause(&[dst, val]);
-        }
+        transformer::not(&mut self.formula, dst.as_bool(), val.as_bool());
         dst
     }
 
     fn and(&mut self, val1: Value, val2: Value) -> Value {
         let dst = self.next_literal();
-        {
-            let dst = dst.as_bool();
-            let val1 = val1.as_bool();
-            let val2 = val2.as_bool();
-            self.add_clause(&[val1.inverted(), val2.inverted(), dst]);
-            self.add_clause(&[val1, dst.inverted()]);
-            self.add_clause(&[val2, dst.inverted()]);
-        }
+        transformer::and(
+            &mut self.formula,
+            dst.as_bool(),
+            val1.as_bool(),
+            val2.as_bool(),
+        );
         dst
     }
 
     fn eq(&mut self, val1: Value, val2: Value) -> Value {
-        let tmp = self.xor(val1, val2);
-        self.not(tmp)
+        match (&val1, &val2) {
+            (Value::Bool(_), Value::Bool(_)) => {
+                let tmp = self.xor(val1, val2);
+                self.not(tmp)
+            }
+            (Value::BitVector(bv1), Value::BitVector(bv2)) => {
+                assert_eq!(bv1.len(), bv2.len());
+                let tmp1 = self.bvxor(val1, val2);
+                let tmp2 = self.next_literal();
+                transformer::or_many(&mut self.formula, tmp2.as_bool(), &tmp1.as_bv());
+                self.not(tmp2)
+            }
+
+            _ => panic!(),
+        }
     }
 
     fn or(&mut self, val1: Value, val2: Value) -> Value {
         let dst = self.next_literal();
-        {
-            let dst = dst.as_bool();
-            let val1 = val1.as_bool();
-            let val2 = val2.as_bool();
-            self.add_clause(&[val1, val2, dst.inverted()]);
-            self.add_clause(&[val1.inverted(), dst]);
-            self.add_clause(&[val2.inverted(), dst]);
-        }
+        transformer::or(
+            &mut self.formula,
+            dst.as_bool(),
+            val1.as_bool(),
+            val2.as_bool(),
+        );
         dst
     }
 
     fn xor(&mut self, val1: Value, val2: Value) -> Value {
         let dst = self.next_literal();
-        {
-            let dst = dst.as_bool();
-            let val1 = val1.as_bool();
-            let val2 = val2.as_bool();
-            self.add_clause(&[val1.inverted(), val2.inverted(), dst.inverted()]);
-            self.add_clause(&[val1, val2, dst.inverted()]);
-            self.add_clause(&[val1, val2.inverted(), dst]);
-            self.add_clause(&[val1.inverted(), val2, dst]);
+        transformer::xor(
+            &mut self.formula,
+            dst.as_bool(),
+            val1.as_bool(),
+            val2.as_bool(),
+        );
+        dst
+    }
+
+    fn bvnot(&mut self, val: Value) -> Value {
+        let val = val.as_bv();
+
+        let dst = self.next_literals(val.len());
+        for (i, d) in dst.as_bv().into_iter().enumerate() {
+            transformer::not(&mut self.formula, d, val[i]);
         }
+
+        dst
+    }
+
+    fn bvand(&mut self, val1: Value, val2: Value) -> Value {
+        let val1 = val1.as_bv();
+        let val2 = val2.as_bv();
+        assert_eq!(val1.len(), val2.len());
+
+        let dst = self.next_literals(val1.len());
+        for (i, d) in dst.as_bv().into_iter().enumerate() {
+            transformer::and(&mut self.formula, d, val1[i], val2[i]);
+        }
+
+        dst
+    }
+
+    fn bvor(&mut self, val1: Value, val2: Value) -> Value {
+        let val1 = val1.as_bv();
+        let val2 = val2.as_bv();
+        assert_eq!(val1.len(), val2.len());
+
+        let dst = self.next_literals(val1.len());
+        for (i, d) in dst.as_bv().into_iter().enumerate() {
+            transformer::or(&mut self.formula, d, val1[i], val2[i]);
+        }
+
+        dst
+    }
+
+    fn bvxor(&mut self, val1: Value, val2: Value) -> Value {
+        let val1 = val1.as_bv();
+        let val2 = val2.as_bv();
+        assert_eq!(val1.len(), val2.len());
+
+        let dst = self.next_literals(val1.len());
+        for (i, d) in dst.as_bv().into_iter().enumerate() {
+            transformer::xor(&mut self.formula, d, val1[i], val2[i]);
+        }
+
         dst
     }
 
@@ -181,5 +250,10 @@ impl Transformer {
         let new_index = self.literal_index;
         self.literal_index += 1;
         Value::Bool(Literal::new(new_index, false))
+    }
+
+    fn next_literals(&mut self, length: usize) -> Value {
+        let bv = (1..length).map(|_| self.next_literal().as_bool()).collect();
+        Value::BitVector(bv)
     }
 }

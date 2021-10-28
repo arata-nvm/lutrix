@@ -15,10 +15,15 @@ pub enum VariableType {
 #[derive(Debug)]
 pub enum Expression {
     Variable(String),
-    Not(Box<Expression>),
 
+    Not(Box<Expression>),
     And(Box<Expression>, Box<Expression>),
     Eq(Box<Expression>, Box<Expression>),
     Or(Box<Expression>, Box<Expression>),
     Xor(Box<Expression>, Box<Expression>),
+
+    BvNot(Box<Expression>),
+    BvAnd(Box<Expression>, Box<Expression>),
+    BvOr(Box<Expression>, Box<Expression>),
+    BvXor(Box<Expression>, Box<Expression>),
 }
