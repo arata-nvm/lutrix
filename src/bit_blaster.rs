@@ -9,8 +9,21 @@ pub fn transform(problem: Problem) -> Cnf {
 
 struct Transformer {
     formula: Cnf,
-    variables: HashMap<String, Literal>,
+    variables: HashMap<String, Value>,
     literal_index: usize,
+}
+
+#[derive(Debug, Clone, Copy)]
+enum Value {
+    Bool(Literal),
+}
+
+impl Value {
+    fn as_bool(&self) -> Literal {
+        match self {
+            Value::Bool(literal) => *literal,
+        }
+    }
 }
 
 impl Transformer {
@@ -36,14 +49,24 @@ impl Transformer {
                 let expr = self.transform_expr(expr);
                 self.assert(expr);
             }
+            Statement::Define(name, typ) => {
+                self.define(name, typ);
+            }
         }
     }
 
-    fn assert(&mut self, expr: Literal) {
-        self.add_clause(&[expr]);
+    fn assert(&mut self, val: Value) {
+        self.add_clause(&[val.as_bool()]);
     }
 
-    fn transform_expr(&mut self, expr: Expression) -> Literal {
+    fn define(&mut self, name: String, typ: VariableType) {
+        let val = match typ {
+            VariableType::Bool => self.next_literal(),
+        };
+        self.variables.insert(name, val);
+    }
+
+    fn transform_expr(&mut self, expr: Expression) -> Value {
         match expr {
             Expression::Variable(name) => self.variable(name),
             Expression::Not(expr) => {
@@ -51,72 +74,89 @@ impl Transformer {
                 self.not(expr)
             }
 
-            Expression::And(expr1, expr2) => {
-                let expr1 = self.transform_expr(*expr1);
-                let expr2 = self.transform_expr(*expr2);
-                self.and(expr1, expr2)
+            Expression::And(val1, val2) => {
+                let val1 = self.transform_expr(*val1);
+                let val2 = self.transform_expr(*val2);
+                self.and(val1, val2)
             }
-            Expression::Eq(expr1, expr2) => {
-                let expr1 = self.transform_expr(*expr1);
-                let expr2 = self.transform_expr(*expr2);
-                self.eq(expr1, expr2)
+            Expression::Eq(val1, val2) => {
+                let val1 = self.transform_expr(*val1);
+                let val2 = self.transform_expr(*val2);
+                self.eq(val1, val2)
             }
-            Expression::Or(expr1, expr2) => {
-                let expr1 = self.transform_expr(*expr1);
-                let expr2 = self.transform_expr(*expr2);
-                self.or(expr1, expr2)
+            Expression::Or(val1, val2) => {
+                let val1 = self.transform_expr(*val1);
+                let val2 = self.transform_expr(*val2);
+                self.or(val1, val2)
             }
-            Expression::Xor(expr1, expr2) => {
-                let expr1 = self.transform_expr(*expr1);
-                let expr2 = self.transform_expr(*expr2);
-                self.xor(expr1, expr2)
+            Expression::Xor(val1, val2) => {
+                let val1 = self.transform_expr(*val1);
+                let val2 = self.transform_expr(*val2);
+                self.xor(val1, val2)
             }
         }
     }
 
-    fn variable(&mut self, name: String) -> Literal {
-        if !self.variables.contains_key(&name) {
-            let next_literal = self.next_literal();
-            self.variables.insert(name.clone(), next_literal);
+    fn variable(&mut self, name: String) -> Value {
+        match self.variables.get(&name) {
+            Some(var) => *var,
+            None => panic!("variable `{}` not found", name),
         }
-
-        self.variables[&name]
     }
 
-    fn not(&mut self, expr: Literal) -> Literal {
+    fn not(&mut self, val: Value) -> Value {
         let dst = self.next_literal();
-        self.add_clause(&[dst.inverted(), expr.inverted()]);
-        self.add_clause(&[dst, expr]);
+        {
+            let dst = dst.as_bool();
+            let val = val.as_bool();
+            self.add_clause(&[dst.inverted(), val.inverted()]);
+            self.add_clause(&[dst, val]);
+        }
         dst
     }
 
-    fn and(&mut self, expr1: Literal, expr2: Literal) -> Literal {
+    fn and(&mut self, val1: Value, val2: Value) -> Value {
         let dst = self.next_literal();
-        self.add_clause(&[expr1.inverted(), expr2.inverted(), dst]);
-        self.add_clause(&[expr1, dst.inverted()]);
-        self.add_clause(&[expr2, dst.inverted()]);
+        {
+            let dst = dst.as_bool();
+            let val1 = val1.as_bool();
+            let val2 = val2.as_bool();
+            self.add_clause(&[val1.inverted(), val2.inverted(), dst]);
+            self.add_clause(&[val1, dst.inverted()]);
+            self.add_clause(&[val2, dst.inverted()]);
+        }
         dst
     }
 
-    fn eq(&mut self, expr1: Literal, expr2: Literal) -> Literal {
-        let tmp = self.xor(expr1, expr2);
+    fn eq(&mut self, val1: Value, val2: Value) -> Value {
+        let tmp = self.xor(val1, val2);
         self.not(tmp)
     }
 
-    fn or(&mut self, expr1: Literal, expr2: Literal) -> Literal {
+    fn or(&mut self, val1: Value, val2: Value) -> Value {
         let dst = self.next_literal();
-        self.add_clause(&[expr1, expr2, dst.inverted()]);
-        self.add_clause(&[expr1.inverted(), dst]);
-        self.add_clause(&[expr2.inverted(), dst]);
+        {
+            let dst = dst.as_bool();
+            let val1 = val1.as_bool();
+            let val2 = val2.as_bool();
+            self.add_clause(&[val1, val2, dst.inverted()]);
+            self.add_clause(&[val1.inverted(), dst]);
+            self.add_clause(&[val2.inverted(), dst]);
+        }
         dst
     }
 
-    fn xor(&mut self, expr1: Literal, expr2: Literal) -> Literal {
+    fn xor(&mut self, val1: Value, val2: Value) -> Value {
         let dst = self.next_literal();
-        self.add_clause(&[expr1.inverted(), expr2.inverted(), dst.inverted()]);
-        self.add_clause(&[expr1, expr2, dst.inverted()]);
-        self.add_clause(&[expr1, expr2.inverted(), dst]);
-        self.add_clause(&[expr1.inverted(), expr2, dst]);
+        {
+            let dst = dst.as_bool();
+            let val1 = val1.as_bool();
+            let val2 = val2.as_bool();
+            self.add_clause(&[val1.inverted(), val2.inverted(), dst.inverted()]);
+            self.add_clause(&[val1, val2, dst.inverted()]);
+            self.add_clause(&[val1, val2.inverted(), dst]);
+            self.add_clause(&[val1.inverted(), val2, dst]);
+        }
         dst
     }
 
@@ -124,9 +164,9 @@ impl Transformer {
         self.formula.add_clause(literals);
     }
 
-    fn next_literal(&mut self) -> Literal {
+    fn next_literal(&mut self) -> Value {
         let new_index = self.literal_index;
         self.literal_index += 1;
-        Literal::new(new_index, false)
+        Value::Bool(Literal::new(new_index, false))
     }
 }

@@ -3,6 +3,12 @@ pub type Problem = Vec<Statement>;
 #[derive(Debug)]
 pub enum Statement {
     Assert(Expression),
+    Define(String, VariableType),
+}
+
+#[derive(Debug)]
+pub enum VariableType {
+    Bool,
 }
 
 #[derive(Debug)]
