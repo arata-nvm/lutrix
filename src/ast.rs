@@ -9,6 +9,7 @@ pub enum Statement {
 #[derive(Debug)]
 pub enum VariableType {
     Bool,
+    BitVector(usize),
 }
 
 #[derive(Debug)]

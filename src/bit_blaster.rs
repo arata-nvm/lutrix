@@ -13,15 +13,24 @@ struct Transformer {
     literal_index: usize,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 enum Value {
     Bool(Literal),
+    BitVector(Vec<Literal>),
 }
 
 impl Value {
     fn as_bool(&self) -> Literal {
         match self {
-            Value::Bool(literal) => *literal,
+            Value::Bool(literal) => literal.clone(),
+            _ => panic!(),
+        }
+    }
+
+    fn as_bv(&self) -> Vec<Literal> {
+        match self {
+            Value::BitVector(bv) => bv.clone(),
+            _ => panic!(),
         }
     }
 }
@@ -62,6 +71,10 @@ impl Transformer {
     fn define(&mut self, name: String, typ: VariableType) {
         let val = match typ {
             VariableType::Bool => self.next_literal(),
+            VariableType::BitVector(length) => {
+                let bv = (1..length).map(|_| self.next_literal().as_bool()).collect();
+                Value::BitVector(bv)
+            }
         };
         self.variables.insert(name, val);
     }
@@ -99,7 +112,7 @@ impl Transformer {
 
     fn variable(&mut self, name: String) -> Value {
         match self.variables.get(&name) {
-            Some(var) => *var,
+            Some(var) => var.clone(),
             None => panic!("variable `{}` not found", name),
         }
     }
