@@ -41,6 +41,31 @@ impl Transformer {
     fn transform_expr(&mut self, node: Node) -> Literal {
         match node {
             Node::Variable(name) => self.variable(name),
+            Node::Not(expr) => {
+                let expr = self.transform_expr(*expr);
+                self.not(expr)
+            }
+
+            Node::And(expr1, expr2) => {
+                let expr1 = self.transform_expr(*expr1);
+                let expr2 = self.transform_expr(*expr2);
+                self.and(expr1, expr2)
+            }
+            Node::Eq(expr1, expr2) => {
+                let expr1 = self.transform_expr(*expr1);
+                let expr2 = self.transform_expr(*expr2);
+                self.eq(expr1, expr2)
+            }
+            Node::Or(expr1, expr2) => {
+                let expr1 = self.transform_expr(*expr1);
+                let expr2 = self.transform_expr(*expr2);
+                self.or(expr1, expr2)
+            }
+            Node::Xor(expr1, expr2) => {
+                let expr1 = self.transform_expr(*expr1);
+                let expr2 = self.transform_expr(*expr2);
+                self.xor(expr1, expr2)
+            }
             _ => panic!(),
         }
     }
@@ -52,6 +77,43 @@ impl Transformer {
         }
 
         self.variables[&name]
+    }
+
+    fn not(&mut self, expr: Literal) -> Literal {
+        let dst = self.next_literal();
+        self.add_clause(&[dst.inverted(), expr.inverted()]);
+        self.add_clause(&[dst, expr]);
+        dst
+    }
+
+    fn and(&mut self, expr1: Literal, expr2: Literal) -> Literal {
+        let dst = self.next_literal();
+        self.add_clause(&[expr1.inverted(), expr2.inverted(), dst]);
+        self.add_clause(&[expr1, dst.inverted()]);
+        self.add_clause(&[expr2, dst.inverted()]);
+        dst
+    }
+
+    fn eq(&mut self, expr1: Literal, expr2: Literal) -> Literal {
+        let tmp = self.xor(expr1, expr2);
+        self.not(tmp)
+    }
+
+    fn or(&mut self, expr1: Literal, expr2: Literal) -> Literal {
+        let dst = self.next_literal();
+        self.add_clause(&[expr1, expr2, dst.inverted()]);
+        self.add_clause(&[expr1.inverted(), dst]);
+        self.add_clause(&[expr2.inverted(), dst]);
+        dst
+    }
+
+    fn xor(&mut self, expr1: Literal, expr2: Literal) -> Literal {
+        let dst = self.next_literal();
+        self.add_clause(&[expr1.inverted(), expr2.inverted(), dst.inverted()]);
+        self.add_clause(&[expr1, expr2, dst.inverted()]);
+        self.add_clause(&[expr1, expr2.inverted(), dst]);
+        self.add_clause(&[expr1.inverted(), expr2, dst]);
+        dst
     }
 
     fn add_clause(&mut self, literals: &[Literal]) {
