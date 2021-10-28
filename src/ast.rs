@@ -1,12 +1,17 @@
+pub type Problem = Vec<Statement>;
+
 #[derive(Debug)]
-pub enum Node {
-    Assert(Box<Node>),
+pub enum Statement {
+    Assert(Expression),
+}
 
+#[derive(Debug)]
+pub enum Expression {
     Variable(String),
-    Not(Box<Node>),
+    Not(Box<Expression>),
 
-    And(Box<Node>, Box<Node>),
-    Eq(Box<Node>, Box<Node>),
-    Or(Box<Node>, Box<Node>),
-    Xor(Box<Node>, Box<Node>),
+    And(Box<Expression>, Box<Expression>),
+    Eq(Box<Expression>, Box<Expression>),
+    Or(Box<Expression>, Box<Expression>),
+    Xor(Box<Expression>, Box<Expression>),
 }

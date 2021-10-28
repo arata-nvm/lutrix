@@ -2,9 +2,9 @@ use std::collections::HashMap;
 
 use crate::{ast::*, types::*};
 
-pub fn transform(ast: Node) -> Cnf {
+pub fn transform(problem: Problem) -> Cnf {
     let transformer = Transformer::new();
-    transformer.transform(ast)
+    transformer.transform(problem)
 }
 
 struct Transformer {
@@ -22,51 +22,55 @@ impl Transformer {
         }
     }
 
-    fn transform(mut self, node: Node) -> Cnf {
-        match node {
-            Node::Assert(expr) => {
-                let expr = self.transform_expr(*expr);
-                self.assert(expr);
-            }
-            _ => panic!(),
+    fn transform(mut self, problem: Problem) -> Cnf {
+        for stmt in problem {
+            self.transform_stmt(stmt);
         }
 
         self.formula
+    }
+
+    fn transform_stmt(&mut self, stmt: Statement) {
+        match stmt {
+            Statement::Assert(expr) => {
+                let expr = self.transform_expr(expr);
+                self.assert(expr);
+            }
+        }
     }
 
     fn assert(&mut self, expr: Literal) {
         self.add_clause(&[expr]);
     }
 
-    fn transform_expr(&mut self, node: Node) -> Literal {
-        match node {
-            Node::Variable(name) => self.variable(name),
-            Node::Not(expr) => {
+    fn transform_expr(&mut self, expr: Expression) -> Literal {
+        match expr {
+            Expression::Variable(name) => self.variable(name),
+            Expression::Not(expr) => {
                 let expr = self.transform_expr(*expr);
                 self.not(expr)
             }
 
-            Node::And(expr1, expr2) => {
+            Expression::And(expr1, expr2) => {
                 let expr1 = self.transform_expr(*expr1);
                 let expr2 = self.transform_expr(*expr2);
                 self.and(expr1, expr2)
             }
-            Node::Eq(expr1, expr2) => {
+            Expression::Eq(expr1, expr2) => {
                 let expr1 = self.transform_expr(*expr1);
                 let expr2 = self.transform_expr(*expr2);
                 self.eq(expr1, expr2)
             }
-            Node::Or(expr1, expr2) => {
+            Expression::Or(expr1, expr2) => {
                 let expr1 = self.transform_expr(*expr1);
                 let expr2 = self.transform_expr(*expr2);
                 self.or(expr1, expr2)
             }
-            Node::Xor(expr1, expr2) => {
+            Expression::Xor(expr1, expr2) => {
                 let expr1 = self.transform_expr(*expr1);
                 let expr2 = self.transform_expr(*expr2);
                 self.xor(expr1, expr2)
             }
-            _ => panic!(),
         }
     }
 
