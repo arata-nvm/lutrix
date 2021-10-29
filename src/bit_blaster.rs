@@ -79,6 +79,7 @@ impl Transformer {
 
     fn transform_expr(&mut self, expr: Expression) -> Value {
         match expr {
+            Expression::Constant(var, length) => self.constant(var, length),
             Expression::Variable(name) => self.variable(name),
             Expression::Not(expr) => {
                 let expr = self.transform_expr(*expr);
@@ -126,6 +127,18 @@ impl Transformer {
                 self.bvxor(val1, val2)
             }
         }
+    }
+
+    fn constant(&mut self, var: usize, length: usize) -> Value {
+        let tmp = self.next_literals(length);
+        for (i, l) in tmp.as_bv().into_iter().rev().enumerate() {
+            match (var >> i) & 1 {
+                0 => self.add_clause(&[l.inverted()]),
+                1 => self.add_clause(&[l]),
+                _ => unreachable!(),
+            }
+        }
+        tmp
     }
 
     fn variable(&mut self, name: String) -> Value {

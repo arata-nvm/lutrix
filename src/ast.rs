@@ -14,6 +14,7 @@ pub enum VariableType {
 
 #[derive(Debug)]
 pub enum Expression {
+    Constant(usize, usize),
     Variable(String),
 
     Not(Box<Expression>),
