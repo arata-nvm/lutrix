@@ -35,3 +35,8 @@ pub fn xor(formula: &mut Cnf, dst: Literal, src1: Literal, src2: Literal) {
     formula.add_clause(&[src1, src2.inverted(), dst]);
     formula.add_clause(&[src1.inverted(), src2, dst]);
 }
+
+pub fn half_adder(formula: &mut Cnf, sum: Literal, carry: Literal, src1: Literal, src2: Literal) {
+    xor(formula, sum, src1, src2);
+    and(formula, carry, src1, src2);
+}

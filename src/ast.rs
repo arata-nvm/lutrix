@@ -27,4 +27,5 @@ pub enum Expression {
     BvAnd(Box<Expression>, Box<Expression>),
     BvOr(Box<Expression>, Box<Expression>),
     BvXor(Box<Expression>, Box<Expression>),
+    BvAdd(Box<Expression>, Box<Expression>),
 }

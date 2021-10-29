@@ -126,6 +126,11 @@ impl Transformer {
                 let val2 = self.transform_expr(*val2);
                 self.bvxor(val1, val2)
             }
+            Expression::BvAdd(val1, val2) => {
+                let val1 = self.transform_expr(*val1);
+                let val2 = self.transform_expr(*val2);
+                self.bvadd(val1, val2)
+            }
         }
     }
 
@@ -253,6 +258,40 @@ impl Transformer {
         }
 
         dst
+    }
+
+    fn bvadd(&mut self, val1: Value, val2: Value) -> Value {
+        let val1 = val1.as_bv();
+        let val2 = val2.as_bv();
+        assert_eq!(val1.len(), val2.len());
+
+        let dst = self.next_literals(val1.len());
+        let mut carry = self.next_literal().as_bool();
+        self.add_clause(&[carry.inverted()]);
+
+        for (i, d) in dst.as_bv().into_iter().enumerate().rev() {
+            let new_carry = self.next_literal().as_bool();
+            self.full_adder(d, new_carry, val1[i], val2[i], carry);
+            carry = new_carry;
+        }
+        dst
+    }
+
+    pub fn full_adder(
+        &mut self,
+        sum: Literal,
+        carry: Literal,
+        src1: Literal,
+        src2: Literal,
+        prev_carry: Literal,
+    ) {
+        let s1 = self.next_literal().as_bool();
+        let c1 = self.next_literal().as_bool();
+        let c2 = self.next_literal().as_bool();
+
+        transformer::half_adder(&mut self.formula, s1, c1, src1, src2);
+        transformer::half_adder(&mut self.formula, sum, c2, s1, prev_carry);
+        transformer::or(&mut self.formula, carry, c1, c2);
     }
 
     fn add_clause(&mut self, literals: &[Literal]) {
