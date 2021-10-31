@@ -5,7 +5,7 @@ pub type Problem = Vec<Statement>;
 #[derive(Debug)]
 pub enum Statement {
     Assert(Expression),
-    Define(String, VariableType),
+    Declare(String, VariableType),
 }
 
 #[derive(Debug)]
@@ -45,7 +45,7 @@ impl fmt::Display for Statement {
         use self::Statement::*;
         match self {
             Assert(expr) => write!(f, "(assert {})", expr),
-            Define(name, typ) => write!(f, "(declare-fun {} () {})", name, typ),
+            Declare(name, typ) => write!(f, "(declare-fun {} () {})", name, typ),
         }
     }
 }

@@ -59,8 +59,8 @@ impl Transformer {
                 let expr = self.transform_expr(expr);
                 self.assert(expr);
             }
-            Statement::Define(name, typ) => {
-                self.define(name, typ);
+            Statement::Declare(name, typ) => {
+                self.declare(name, typ);
             }
         }
     }
@@ -69,7 +69,7 @@ impl Transformer {
         self.add_clause(&[val.as_bool()]);
     }
 
-    fn define(&mut self, name: String, typ: VariableType) {
+    fn declare(&mut self, name: String, typ: VariableType) {
         let val = match typ {
             VariableType::Bool => self.next_literal(),
             VariableType::BitVector(length) => self.next_literals(length),
