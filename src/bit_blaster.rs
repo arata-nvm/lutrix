@@ -131,6 +131,11 @@ impl Transformer {
                 let val2 = self.transform_expr(*val2);
                 self.bvadd(val1, val2)
             }
+            Expression::BvSub(val1, val2) => {
+                let val1 = self.transform_expr(*val1);
+                let val2 = self.transform_expr(*val2);
+                self.bvsub(val1, val2)
+            }
         }
     }
 
@@ -275,6 +280,17 @@ impl Transformer {
             carry = new_carry;
         }
         dst
+    }
+
+    pub fn bvsub(&mut self, val1: Value, val2: Value) -> Value {
+        let val1_len = val1.as_bv().len();
+        let val2_len = val2.as_bv().len();
+        assert_eq!(val1_len, val2_len);
+
+        let val2_not = self.bvnot(val2);
+        let one = self.constant(1, val1_len);
+        let val2_comp = self.bvadd(val2_not, one);
+        self.bvadd(val1, val2_comp)
     }
 
     pub fn full_adder(

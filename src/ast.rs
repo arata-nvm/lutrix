@@ -30,6 +30,7 @@ pub enum Expression {
     BvOr(Box<Expression>, Box<Expression>),
     BvXor(Box<Expression>, Box<Expression>),
     BvAdd(Box<Expression>, Box<Expression>),
+    BvSub(Box<Expression>, Box<Expression>),
 }
 
 pub fn dump(problem: &Problem) -> String {
@@ -76,6 +77,7 @@ impl fmt::Display for Expression {
             BvOr(expr1, expr2) => write!(f, "(bvor {} {})", expr1, expr2),
             BvXor(expr1, expr2) => write!(f, "(bvxor {} {})", expr1, expr2),
             BvAdd(expr1, expr2) => write!(f, "(bvadd {} {})", expr1, expr2),
+            BvSub(expr1, expr2) => write!(f, "(bvsub {} {})", expr1, expr2),
         }
     }
 }
