@@ -136,6 +136,14 @@ impl Transformer {
                 let val2 = self.transform_expr(*val2);
                 self.bvsub(val1, val2)
             }
+            Expression::BvShl(val, n) => {
+                let val = self.transform_expr(*val);
+                self.bvshl(val, n)
+            }
+            Expression::BvShr(val, n) => {
+                let val = self.transform_expr(*val);
+                self.bvshr(val, n)
+            }
         }
     }
 
@@ -291,6 +299,42 @@ impl Transformer {
         let one = self.constant(1, val1_len);
         let val2_comp = self.bvadd(val2_not, one);
         self.bvadd(val1, val2_comp)
+    }
+
+    pub fn bvshl(&mut self, val: Value, n: usize) -> Value {
+        let dst = self.next_literals(val.as_bv().len());
+
+        let val = val.as_bv();
+        {
+            let dst = dst.as_bv();
+            if val.len() >= n {
+                for i in 0..(val.len() - n) {
+                    let eq = self.eq(Value::Bool(dst[i]), Value::Bool(val[i + n]));
+                    self.assert(eq);
+                }
+            }
+            for i in 1..=n.min(val.len()) {
+                self.add_clause(&[dst[val.len() - i].inverted()]);
+            }
+        }
+        dst
+    }
+
+    pub fn bvshr(&mut self, val: Value, n: usize) -> Value {
+        let dst = self.next_literals(val.as_bv().len());
+
+        let val = val.as_bv();
+        {
+            let dst = dst.as_bv();
+            for i in n..val.len() {
+                let eq = self.eq(Value::Bool(dst[i]), Value::Bool(val[i - n]));
+                self.assert(eq);
+            }
+            for i in 0..n.min(val.len()) {
+                self.add_clause(&[dst[i].inverted()]);
+            }
+        }
+        dst
     }
 
     pub fn full_adder(
