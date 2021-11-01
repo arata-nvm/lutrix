@@ -149,6 +149,26 @@ impl Transformer {
                 let val = self.transform_expr(*val);
                 self.bvshr(val, n)
             }
+            Expression::BvUlt(val1, val2) => {
+                let val1 = self.transform_expr(*val1);
+                let val2 = self.transform_expr(*val2);
+                self.bvult(val1, val2)
+            }
+            Expression::BvUle(val1, val2) => {
+                let val1 = self.transform_expr(*val1);
+                let val2 = self.transform_expr(*val2);
+                self.bvule(val1, val2)
+            }
+            Expression::BvUgt(val1, val2) => {
+                let val1 = self.transform_expr(*val1);
+                let val2 = self.transform_expr(*val2);
+                self.bvugt(val1, val2)
+            }
+            Expression::BvUge(val1, val2) => {
+                let val1 = self.transform_expr(*val1);
+                let val2 = self.transform_expr(*val2);
+                self.bvuge(val1, val2)
+            }
         }
     }
 
@@ -363,6 +383,35 @@ impl Transformer {
             }
         }
         dst
+    }
+
+    pub fn bvult(&mut self, val1: Value, val2: Value) -> Value {
+        assert_eq!(val1.as_bv().len(), val2.as_bv().len());
+
+        // TODO
+        let tmp = self.bvsub(val1, val2);
+        Value::Bool(tmp.as_bv()[0])
+    }
+
+    pub fn bvule(&mut self, val1: Value, val2: Value) -> Value {
+        assert_eq!(val1.as_bv().len(), val2.as_bv().len());
+
+        let tmp1 = self.bvult(val1.clone(), val2.clone());
+        let tmp2 = self.eq(val1, val2);
+        self.or(tmp1, tmp2)
+    }
+
+    pub fn bvugt(&mut self, val1: Value, val2: Value) -> Value {
+        assert_eq!(val1.as_bv().len(), val2.as_bv().len());
+
+        self.bvult(val2, val1)
+    }
+
+    pub fn bvuge(&mut self, val1: Value, val2: Value) -> Value {
+        assert_eq!(val1.as_bv().len(), val2.as_bv().len());
+
+        // TODO
+        self.bvule(val2, val1)
     }
 
     pub fn full_adder(
