@@ -136,6 +136,11 @@ impl Transformer {
                 let val2 = self.transform_expr(*val2);
                 self.bvsub(val1, val2)
             }
+            Expression::BvMul(val1, val2) => {
+                let val1 = self.transform_expr(*val1);
+                let val2 = self.transform_expr(*val2);
+                self.bvmul(val1, val2)
+            }
             Expression::BvShl(val, n) => {
                 let val = self.transform_expr(*val);
                 self.bvshl(val, n)
@@ -299,6 +304,29 @@ impl Transformer {
         let one = self.constant(1, val1_len);
         let val2_comp = self.bvadd(val2_not, one);
         self.bvadd(val1, val2_comp)
+    }
+
+    pub fn bvmul(&mut self, val1: Value, val2: Value) -> Value {
+        let val1 = val1.as_bv();
+        let val2 = val2.as_bv();
+        assert_eq!(val1.len(), val2.len());
+
+        let mut dst = self.constant(0, val1.len());
+        for i in 0..val1.len() {
+            let tmp = self.bvshl(Value::BitVector(val1.clone()), i);
+            let tmp2 = self.next_literals(val1.len());
+            for j in 0..val1.len() {
+                transformer::and(
+                    &mut self.formula,
+                    tmp2.as_bv()[j],
+                    tmp.as_bv()[j],
+                    val2[val1.len() - i - 1],
+                );
+            }
+
+            dst = self.bvadd(dst, tmp2);
+        }
+        dst
     }
 
     pub fn bvshl(&mut self, val: Value, n: usize) -> Value {
