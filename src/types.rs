@@ -73,6 +73,24 @@ impl Cnf {
     pub fn head_literal(&self) -> Option<Literal> {
         self.clauses.get(0).and_then(|c| c.literals.get(0)).cloned()
     }
+
+    pub fn dump(&self) -> String {
+        let mut num_of_var = 0;
+        let mut buf = String::new();
+        for clause in &self.clauses {
+            for literal in &clause.literals {
+                if literal.inverted {
+                    buf.push_str("-");
+                }
+                buf.push_str(&format!("{} ", literal.var));
+                num_of_var = num_of_var.max(literal.var);
+            }
+            buf.push_str("0\n");
+        }
+
+        buf.insert_str(0, &format!("p cnf {} {}", num_of_var, self.clauses.len()));
+        buf
+    }
 }
 
 impl Clause {
