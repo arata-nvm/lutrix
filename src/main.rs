@@ -1,6 +1,6 @@
 use std::env;
 
-use lutrix::{dimacs, dpll, types::Variable};
+use lutrix::{dimacs, sat::dpll, sat::types::Variable};
 
 fn main() {
     let args = env::args().collect::<Vec<String>>();

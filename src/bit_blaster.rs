@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::{ast::*, transformer, types::*};
+use crate::{ast::*, transformer, sat::types::*};
 
 type TransformedProblem = (Cnf, HashMap<String, BitVector>);
 

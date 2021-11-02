@@ -1,4 +1,4 @@
-use crate::types::*;
+use crate::sat::types::*;
 
 pub fn parse(input: &str) -> Cnf {
     let mut tokens = input.split_ascii_whitespace().peekable();

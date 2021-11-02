@@ -1,4 +1,4 @@
-use crate::types::*;
+use crate::sat::types::*;
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum SatResult {

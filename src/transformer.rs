@@ -1,4 +1,4 @@
-use crate::types::*;
+use crate::sat::types::*;
 
 // ref: https://en.wikipedia.org/wiki/Tseytin_transformation
 

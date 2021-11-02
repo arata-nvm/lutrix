@@ -4,10 +4,8 @@ pub mod bit_blaster;
 
 pub mod dimacs;
 
-pub mod dpll;
+pub mod sat;
 
 pub mod smtlib;
 
 pub mod transformer;
-
-pub mod types;

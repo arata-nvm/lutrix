@@ -1,4 +1,4 @@
-use lutrix::{bit_blaster, dpll, smtlib};
+use lutrix::{bit_blaster, sat::dpll, smtlib};
 
 #[test]
 fn bb_1() {

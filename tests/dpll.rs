@@ -1,4 +1,4 @@
-use lutrix::{dimacs, dpll};
+use lutrix::{dimacs, sat::dpll};
 
 #[test]
 fn dpll_1() {
