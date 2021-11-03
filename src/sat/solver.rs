@@ -3,6 +3,7 @@ use super::types::{Cnf, Literal, Model, Variable};
 pub struct Solver {
     formula: Cnf,
     model: Model,
+    literal_index: usize,
 }
 
 impl Solver {
@@ -10,7 +11,13 @@ impl Solver {
         Self {
             formula: Cnf::new(0),
             model: Model::new(),
+            literal_index: 0,
         }
+    }
+
+    pub fn new_literal(&mut self) -> Literal {
+        self.literal_index += 1;
+        Literal::new(self.literal_index, false)
     }
 
     pub fn add_clause(&mut self, literals: &[Literal]) {
