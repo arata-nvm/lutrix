@@ -1,5 +1,9 @@
 pub mod ast;
 
+pub mod bit_vector;
+
 pub mod bit_blaster;
 
-pub mod transformer;
+pub mod solver;
+
+pub mod tseytin;
