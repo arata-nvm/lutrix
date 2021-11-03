@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fmt};
+use std::{collections::HashMap, fmt, ops::Neg};
 
 pub type Variable = usize;
 pub type Model = HashMap<Variable, bool>;
@@ -122,6 +122,13 @@ impl Literal {
             var: self.var,
             inverted: !self.inverted,
         }
+    }
+}
+
+impl Neg for Literal {
+    type Output = Literal;
+    fn neg(self) -> Self::Output {
+        self.inverted()
     }
 }
 
