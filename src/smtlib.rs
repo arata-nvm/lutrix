@@ -1,4 +1,4 @@
-use crate::ast::*;
+use crate::smt::ast::*;
 
 pub fn parse(input: &str) -> Problem {
     let mut parser = Parser::new(input);
