@@ -1,8 +1,8 @@
-use super::types::{Cnf, Literal, Model, Variable};
+use super::types::{Cnf, Literal, Model};
 
 pub struct Solver {
     formula: Cnf,
-    model: Model,
+    models: Vec<Model>,
     literal_index: usize,
 }
 
@@ -10,7 +10,7 @@ impl Solver {
     pub fn new() -> Self {
         Self {
             formula: Cnf::new(0),
-            model: Model::new(),
+            models: vec![Model::new()],
             literal_index: 0,
         }
     }
@@ -37,16 +37,25 @@ impl Solver {
         self.apply_splitting_rule()
     }
 
-    pub fn model(&self) -> &Model {
-        &self.model
+    pub fn model(&self) -> Model {
+        let mut model = Model::new();
+
+        for i in 1..self.literal_index {
+            model.insert(i, false);
+        }
+
+        for m in &self.models {
+            model.extend(m);
+        }
+
+        model
     }
 
     fn apply_unit_rule(&mut self) {
         for literal in self.formula.find_unit_clauses() {
             self.formula.remove_clauses_which_has(&literal);
             self.formula.remove_from_all(&literal.inverted());
-            self.formula.determine(literal.var, !literal.inverted);
-            self.model.insert(literal.var, !literal.inverted);
+            self.cur_model().insert(literal.var, !literal.inverted);
         }
     }
 
@@ -57,22 +66,35 @@ impl Solver {
         };
 
         let original = self.formula.clone();
-        let prev_model = self.model.clone();
 
         self.formula.add_clause(&[literal]);
+        self.push_model();
         if self.check() {
             return true;
         }
+        self.pop_model();
         self.formula = original.clone();
-        self.model = prev_model.clone();
 
-        self.formula.add_clause(&[literal.inverted()]);
+        self.formula.add_clause(&[-literal]);
+        self.push_model();
         if self.check() {
             return true;
         }
+        self.pop_model();
         self.formula = original;
-        self.model = prev_model;
 
         false
+    }
+
+    fn push_model(&mut self) {
+        self.models.push(Model::new());
+    }
+
+    fn pop_model(&mut self) {
+        self.models.pop();
+    }
+
+    fn cur_model(&mut self) -> &mut Model {
+        self.models.last_mut().unwrap()
     }
 }
