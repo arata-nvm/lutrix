@@ -40,7 +40,7 @@ impl Solver {
     pub fn model(&self) -> Model {
         let mut model = Model::new();
 
-        for i in 1..self.literal_index {
+        for i in 1..=self.literal_index {
             model.insert(i, false);
         }
 
