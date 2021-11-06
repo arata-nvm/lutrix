@@ -105,46 +105,46 @@ macro_rules! int {
 
 #[macro_export]
 macro_rules! op {
-    ($lhs:tt == $rhs:expr) => {
+    (= $lhs:expr, $rhs:expr) => {
         lutrix::smt::Expression::Eq(Box::new($lhs.clone()), Box::new($rhs.clone()))
     };
     (! $lhs:expr) => {
         lutrix::smt::Expression::BvNot(Box::new($lhs.clone()))
     };
-    ($lhs:tt & $rhs:expr) => {
+    (& $lhs:expr,  $rhs:expr) => {
         lutrix::smt::Expression::BvAnd(Box::new($lhs.clone()), Box::new($rhs.clone()))
     };
-    ($lhs:tt | $rhs:expr) => {
+    (| $lhs:expr, $rhs:expr) => {
         lutrix::smt::Expression::BvOr(Box::new($lhs.clone()), Box::new($rhs.clone()))
     };
-    ($lhs:tt ^ $rhs:expr) => {
+    (^ $lhs:expr, $rhs:expr) => {
         lutrix::smt::Expression::BvXor(Box::new($lhs.clone()), Box::new($rhs.clone()))
     };
-    ($lhs:tt + $rhs:expr) => {
+    (+ $lhs:expr, $rhs:expr) => {
         lutrix::smt::Expression::BvAdd(Box::new($lhs.clone()), Box::new($rhs.clone()))
     };
-    ($lhs:tt - $rhs:expr) => {
+    (- $lhs:expr, $rhs:expr) => {
         lutrix::smt::Expression::BvSub(Box::new($lhs.clone()), Box::new($rhs.clone()))
     };
-    ($lhs:tt * $rhs:expr) => {
+    (* $lhs:expr, $rhs:expr) => {
         lutrix::smt::Expression::BvMul(Box::new($lhs.clone()), Box::new($rhs.clone()))
     };
-    ($lhs:tt << $rhs:expr) => {
+    (<< $lhs:expr, $rhs:expr) => {
         lutrix::smt::Expression::BvShl(Box::new($lhs.clone()), $rhs)
     };
-    ($lhs:tt >> $rhs:expr) => {
+    (>> $lhs:expr, $rhs:expr) => {
         lutrix::smt::Expression::BvShr(Box::new($lhs.clone()), $rhs)
     };
-    ($lhs:tt < $rhs:expr) => {
+    (< $lhs:expr, $rhs:expr) => {
         lutrix::smt::Expression::BvUlt(Box::new($lhs.clone()), Box::new($rhs.clone()))
     };
-    ($lhs:tt <= $rhs:expr) => {
+    (<= $lhs:expr, $rhs:expr) => {
         lutrix::smt::Expression::BvUle(Box::new($lhs.clone()), Box::new($rhs.clone()))
     };
-    ($lhs:tt > $rhs:expr) => {
+    (> $lhs:expr, $rhs:expr) => {
         lutrix::smt::Expression::BvUgt(Box::new($lhs.clone()), Box::new($rhs.clone()))
     };
-    ($lhs:tt >= $rhs:expr) => {
+    (>= $lhs:expr, $rhs:expr) => {
         lutrix::smt::Expression::BvUge(Box::new($lhs.clone()), Box::new($rhs.clone()))
     };
 }
