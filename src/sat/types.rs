@@ -88,7 +88,7 @@ impl Cnf {
             buf.push_str("0\n");
         }
 
-        buf.insert_str(0, &format!("p cnf {} {}", num_of_var, self.clauses.len()));
+        buf.insert_str(0, &format!("p cnf {} {}\n", num_of_var, self.clauses.len()));
         buf
     }
 }
