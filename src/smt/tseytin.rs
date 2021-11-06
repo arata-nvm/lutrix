@@ -23,7 +23,7 @@ pub fn or(solver: &mut Solver, dst: Literal, src1: Literal, src2: Literal) {
 
 pub fn or_many(solver: &mut Solver, dst: Literal, src: &[Literal]) {
     let mut clause1 = src.to_vec();
-    clause1.push(dst);
+    clause1.push(-dst);
     solver.add_clause(&clause1);
 
     for l in src {
