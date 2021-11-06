@@ -1,13 +1,13 @@
 use lutrix::sat::solver::Solver;
 
 #[test]
-fn dpll_1() {
+fn solver_1() {
     let mut s = Solver::new();
     assert!(s.check());
 }
 
 #[test]
-fn dpll_2() {
+fn solver_2() {
     let mut s = Solver::new();
     let a = s.new_literal();
     s.add_clause(&[a]);
@@ -15,7 +15,7 @@ fn dpll_2() {
 }
 
 #[test]
-fn dpll_3() {
+fn solver_3() {
     let mut s = Solver::new();
     let a = s.new_literal();
     s.add_clause(&[a]);
@@ -24,7 +24,7 @@ fn dpll_3() {
 }
 
 #[test]
-fn dpll_4() {
+fn solver_4() {
     let mut s = Solver::new();
     let a = s.new_literal();
     let b = s.new_literal();
@@ -33,7 +33,7 @@ fn dpll_4() {
 }
 
 #[test]
-fn dpll_5() {
+fn solver_5() {
     let mut s = Solver::new();
     let a = s.new_literal();
     let b = s.new_literal();
@@ -43,7 +43,7 @@ fn dpll_5() {
 }
 
 #[test]
-fn dpll_6() {
+fn solver_6() {
     let mut s = Solver::new();
     let a = s.new_literal();
     let b = s.new_literal();
