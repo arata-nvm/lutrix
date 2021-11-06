@@ -1,7 +1,5 @@
-pub mod dimacs;
+pub mod parser;
 
 pub mod sat;
 
 pub mod smt;
-
-pub mod smtlib;

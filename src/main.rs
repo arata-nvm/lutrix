@@ -1,7 +1,7 @@
 use std::env;
 
 use lutrix::{
-    dimacs,
+    parser::dimacs,
     sat::{types::Variable, Solver},
 };
 
