@@ -7,8 +7,8 @@ use super::{ast::Expression, bit_vector::BitVector};
 pub type Model = HashMap<String, usize>;
 
 pub struct Solver {
-    pub sat_solver: sat::Solver,
-    pub variables: HashMap<String, BitVector>,
+    pub(crate) sat_solver: sat::Solver,
+    pub(crate) variables: HashMap<String, BitVector>,
 }
 
 impl Solver {

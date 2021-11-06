@@ -3,7 +3,7 @@ use crate::{sat::types::*, smt::ast::*, smt::tseytin};
 use super::{bit_vector::BitVector, solver::Solver};
 
 impl Solver {
-    pub fn transform(&mut self, expr: Expression) -> BitVector {
+    pub(crate) fn transform(&mut self, expr: Expression) -> BitVector {
         match expr {
             Expression::Constant(var, length) => self.constant(var, length),
             Expression::Variable(name) => self.variable(name),
@@ -215,7 +215,7 @@ impl Solver {
         dst
     }
 
-    pub fn bvsub(&mut self, val1: BitVector, val2: BitVector) -> BitVector {
+    fn bvsub(&mut self, val1: BitVector, val2: BitVector) -> BitVector {
         assert_eq!(val1.len(), val2.len());
 
         let val2_not = self.bvnot(val2);
@@ -224,7 +224,7 @@ impl Solver {
         self.bvadd(val1, val2_comp)
     }
 
-    pub fn bvmul(&mut self, val1: BitVector, val2: BitVector) -> BitVector {
+    fn bvmul(&mut self, val1: BitVector, val2: BitVector) -> BitVector {
         assert_eq!(val1.len(), val2.len());
 
         let mut dst = self.constant(0, val1.len());
@@ -240,7 +240,7 @@ impl Solver {
         dst
     }
 
-    pub fn bvshl(&mut self, val: BitVector, n: usize) -> BitVector {
+    fn bvshl(&mut self, val: BitVector, n: usize) -> BitVector {
         let dst = self.next_literals(val.len());
 
         if val.len() >= n {
@@ -259,7 +259,7 @@ impl Solver {
         dst
     }
 
-    pub fn bvshr(&mut self, val: BitVector, n: usize) -> BitVector {
+    fn bvshr(&mut self, val: BitVector, n: usize) -> BitVector {
         let dst = self.next_literals(val.len());
 
         for i in n..val.len() {
@@ -276,7 +276,7 @@ impl Solver {
         dst
     }
 
-    pub fn bvult(&mut self, val1: BitVector, val2: BitVector) -> BitVector {
+    fn bvult(&mut self, val1: BitVector, val2: BitVector) -> BitVector {
         assert_eq!(val1.len(), val2.len());
 
         // TODO
@@ -284,7 +284,7 @@ impl Solver {
         BitVector::new_bool(tmp.at(0))
     }
 
-    pub fn bvule(&mut self, val1: BitVector, val2: BitVector) -> BitVector {
+    fn bvule(&mut self, val1: BitVector, val2: BitVector) -> BitVector {
         assert_eq!(val1.len(), val2.len());
 
         let tmp1 = self.bvult(val1.clone(), val2.clone());
@@ -292,20 +292,20 @@ impl Solver {
         self.or(tmp1, tmp2)
     }
 
-    pub fn bvugt(&mut self, val1: BitVector, val2: BitVector) -> BitVector {
+    fn bvugt(&mut self, val1: BitVector, val2: BitVector) -> BitVector {
         assert_eq!(val1.len(), val2.len());
 
         self.bvult(val2, val1)
     }
 
-    pub fn bvuge(&mut self, val1: BitVector, val2: BitVector) -> BitVector {
+    fn bvuge(&mut self, val1: BitVector, val2: BitVector) -> BitVector {
         assert_eq!(val1.len(), val2.len());
 
         // TODO
         self.bvule(val2, val1)
     }
 
-    pub fn full_adder(
+    fn full_adder(
         &mut self,
         sum: Literal,
         carry: Literal,
