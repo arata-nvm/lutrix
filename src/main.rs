@@ -1,6 +1,9 @@
 use std::env;
 
-use lutrix::{dimacs, sat::dpll, sat::types::Variable};
+use lutrix::{
+    dimacs,
+    sat::{types::Variable, Solver},
+};
 
 fn main() {
     let args = env::args().collect::<Vec<String>>();
@@ -13,17 +16,21 @@ fn main() {
     let input = std::fs::read_to_string(&args[1]).expect("cannot read file");
     let formula = dimacs::parse(&input);
     println!("[*] formula = {}", formula);
-    match dpll::solve(formula) {
-        dpll::SatResult::Sat(solution) => {
+
+    let mut solver = Solver::new();
+    solver.set_formula(formula);
+    match solver.check() {
+        true => {
             println!("SAT");
 
-            let mut vars = solution.keys().collect::<Vec<&Variable>>();
+            let model = solver.model();
+            let mut vars = model.keys().collect::<Vec<&Variable>>();
             vars.sort();
             for var in vars {
-                println!("x{} = {}", var, solution[var]);
+                println!("x{} = {}", var, model[var]);
             }
         }
-        dpll::SatResult::Unsat => {
+        false => {
             println!("UNSAT");
         }
     }

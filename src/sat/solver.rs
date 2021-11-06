@@ -9,7 +9,7 @@ pub struct Solver {
 impl Solver {
     pub fn new() -> Self {
         Self {
-            formula: Cnf::new(0),
+            formula: Cnf::new(),
             models: vec![Model::new()],
             literal_index: 0,
         }
@@ -18,6 +18,10 @@ impl Solver {
     pub fn new_literal(&mut self) -> Literal {
         self.literal_index += 1;
         Literal::new(self.literal_index, false)
+    }
+
+    pub fn set_formula(&mut self, formula: Cnf) {
+        self.formula = formula;
     }
 
     pub fn add_clause(&mut self, literals: &[Literal]) {

@@ -5,9 +5,7 @@ pub type Model = HashMap<Variable, bool>;
 
 #[derive(Debug, Clone)]
 pub struct Cnf {
-    pub num_of_variables: usize,
     pub clauses: Vec<Clause>,
-    pub determined: Model,
 }
 
 #[derive(Debug, Clone)]
@@ -22,17 +20,9 @@ pub struct Literal {
 }
 
 impl Cnf {
-    pub fn new(num_of_variables: usize) -> Self {
+    pub fn new() -> Self {
         Self {
-            num_of_variables,
             clauses: Vec::new(),
-            determined: {
-                let mut determined = Model::new();
-                for i in 1..=num_of_variables {
-                    determined.insert(i, false);
-                }
-                determined
-            },
         }
     }
 
@@ -48,10 +38,6 @@ impl Cnf {
         for i in 0..self.clauses.len() {
             self.clauses[i].remove(literal);
         }
-    }
-
-    pub fn determine(&mut self, var: Variable, value: bool) {
-        self.determined.insert(var, value);
     }
 
     pub fn is_consistent(&self) -> bool {

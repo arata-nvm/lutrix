@@ -10,10 +10,10 @@ pub fn parse(input: &str) -> Cnf {
         panic!("requires DIMACS format");
     }
 
-    let num_of_variables = tokens.next().unwrap().parse::<usize>().unwrap();
+    let _num_of_variables = tokens.next().unwrap().parse::<usize>().unwrap();
     let num_of_clauses = tokens.next().unwrap().parse::<usize>().unwrap();
 
-    let mut cnf = Cnf::new(num_of_variables);
+    let mut cnf = Cnf::new();
     for _ in 0..num_of_clauses {
         let mut literals = Vec::new();
 

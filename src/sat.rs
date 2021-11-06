@@ -1,5 +1,3 @@
-pub mod dpll;
-
 pub mod solver;
 pub use solver::*;
 
